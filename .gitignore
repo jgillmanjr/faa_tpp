@@ -1,0 +1,4 @@
+*.ipynb
+.ipynb_checkpoints/
+.idea/
+faa_tpp/__pycache__/

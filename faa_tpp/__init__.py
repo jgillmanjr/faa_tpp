@@ -9,26 +9,6 @@ import requests
 __all__ = ['ParsedTPP']
 
 
-record_fields = [
-    'chartseq',
-    'chart_code',
-    'chart_name',
-    'useraction',
-    'pdf_name',
-    'cn_flg',
-    # 'cnsection', Some special stuff is needed for this. Do later.
-    'cnpage',
-    # 'bvsection', # Same as above. Special handling required.
-    'bvpage',
-    'procuid',
-    'two_colored',
-    'civil',
-    'faanfd15',
-    'faanfd18',
-    'copter'
-]
-
-
 def get_crnt_aeronav():
     """
     Determine the location of the current d-TPP aeronav data
@@ -50,6 +30,46 @@ def get_crnt_aeronav():
         enmbr = str(enmbr)
 
     return base_aeronav + eyear + enmbr + '/'
+
+
+class AirportRecord:
+    """
+    Represents an airport record
+    """
+    def __init__(self, anav_base, record_data):
+        record_properties = [
+            'chartseq',
+            'chart_code',
+            'chart_name',
+            'useraction',
+            'pdf_name',
+            'cn_flg',
+            # 'cnsection', Some special stuff is needed for this. Do later.
+            'cnpage',
+            # 'bvsection', # Same as above. Special handling required.
+            'bvpage',
+            'procuid',
+            'two_colored',
+            'civil',
+            'faanfd15',
+            'faanfd18',
+            'copter'
+        ]
+        for field in record_properties:
+            setattr(
+                self,
+                field,
+                getattr(record_data, field).cdata
+            )
+        self.pdf_url = anav_base + self.pdf_name
+
+    def get_pdf(self):
+        """
+        Gets the PDF data of the record
+        :return:
+        """
+        r = requests.get(self.pdf_url)
+        return r.content
 
 
 class ParsedTPP:
@@ -111,8 +131,4 @@ class ParsedTPP:
                         records = [airport.record]
 
                     for record in records:
-                        record_dict = {}
-                        for field in record_fields:
-                            record_dict[field] = getattr(record, field).cdata
-
-                        current_airport['records'].append(record_dict)
+                        current_airport['records'].append(AirportRecord(anav_base=self.anav_base, record_data=record))

@@ -3,6 +3,7 @@ Let's do some playing with the FAA dTPPs...
 https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dtpp/
 """
 import untangle
+import requests
 
 
 __all__ = ['ParsedTPP']
@@ -28,14 +29,39 @@ record_fields = [
 ]
 
 
+def get_crnt_aeronav():
+    """
+    Determine the location of the current d-TPP aeronav data
+    :return:
+    """
+    # https://app.swaggerhub.com/apis/FAA/APRA/1.2.0
+    base_aeronav = 'https://aeronav.faa.gov/d-tpp/'
+    edition_api_url = 'https://soa.smext.faa.gov/apra/dtpp/info?edition=current&geoname=US'
+    headers = {
+        'accept': 'application/json',  # JSON, please...
+    }
+    r = requests.get(url=edition_api_url, headers=headers)
+    eyear = r.json()['edition'][0]['editionDate'][-2:]  # Get the last two, because that's what we need
+    enmbr = r.json()['edition'][0]['editionNumber']
+
+    if enmbr < 10:
+        enmbr = '0' + str(enmbr)
+    else:
+        enmbr = str(enmbr)
+
+    return base_aeronav + eyear + enmbr + '/'
+
+
 class ParsedTPP:
-    def __init__(self, tpp_metafile):
+    def __init__(self):
         """
         Initialize
-        :param tpp_metafile: The location of the d-TPP XML Metafile
+        :return:
         """
         self.tpp_dict = {}  # Placeholder
-        self.parsed_tpp = untangle.parse(tpp_metafile)
+        self.anav_base = get_crnt_aeronav()
+        meta_url = self.anav_base + 'xml_data/d-TPP_Metafile.xml'
+        self.parsed_tpp = untangle.parse(meta_url)
         self.to_dict()
 
     def return_parsed(self):

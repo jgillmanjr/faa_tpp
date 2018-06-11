@@ -43,12 +43,14 @@ class Airport:
             military,
             faa_ident,
             icao_ident,
+            name,
     ):
         self.location_data = location_data
         self.volume = volume
         self.military = military
         self.faa_ident = faa_ident
         self.icao_ident = icao_ident
+        self.name = name
 
         self.records = []
 
@@ -116,6 +118,7 @@ class ParsedTPP:
         self.anav_base = get_crnt_aeronav()
         self.parsed_tpp = self._parse_current_meta()
         self.apt_dict = self._to_dict()
+        self.state_dict = self._state_dict()  # Airports by state
 
     def return_parsed(self):
         """
@@ -130,6 +133,20 @@ class ParsedTPP:
         :return:
         """
         return self.apt_dict
+
+    def return_state_airports(self, state_code=None):
+        """
+        Return airports for a given state
+        :return:
+        """
+        if state_code is None:
+            print('States: ')
+            for sc in sorted(self.state_dict.keys()):
+                print('\t[' + sc + '] ' + self.state_dict[sc]['state_name'])
+            state_code = input('Choice: ')
+
+        state_code = state_code.upper()
+        return self.state_dict[state_code]['airports']
 
     def _to_dict(self):
         """
@@ -155,6 +172,7 @@ class ParsedTPP:
                         'military': airport['military'],
                         'faa_ident': airport['apt_ident'],
                         'icao_ident': airport['icao_ident'],
+                        'name': airport['ID']
                     }
                     apt_dict[airport['apt_ident']] = Airport(**apt_data)
                     current_airport = apt_dict[airport['apt_ident']]
@@ -176,3 +194,22 @@ class ParsedTPP:
         """
         meta_url = self.anav_base + 'xml_data/d-TPP_Metafile.xml'
         return untangle.parse(meta_url)
+
+    def _state_dict(self):
+        """
+        Build a dictionary of airports by state
+        :return:
+        """
+        sd = {}
+        for id, data in self.apt_dict.items():
+            state_code = data.location_data['state_code']
+            state_name = data.location_data['state_name']
+            if state_code not in sd:
+                sd[state_code] = {
+                    'state_name': state_name,
+                    'airports': []
+                }
+
+            sd[state_code]['airports'].append(data)
+
+        return sd

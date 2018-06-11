@@ -58,7 +58,7 @@ class ParsedTPP:
         Initialize
         :return:
         """
-        self.tpp_dict = {}  # Placeholder
+        self.apt_dict = {}  # Placeholder
         self.anav_base = get_crnt_aeronav()
         meta_url = self.anav_base + 'xml_data/d-TPP_Metafile.xml'
         self.parsed_tpp = untangle.parse(meta_url)
@@ -76,7 +76,7 @@ class ParsedTPP:
         Return the dictionary.
         :return:
         """
-        return self.tpp_dict
+        return self.apt_dict
 
     def to_dict(self):
         """
@@ -84,29 +84,26 @@ class ParsedTPP:
         :return:
         """
         for state in self.parsed_tpp.digital_tpp.state_code:
-            self.tpp_dict[state['ID']] = {}
-            current_state_dict = self.tpp_dict[state['ID']]
-            current_state_dict['fullname'] = state['state_fullname']
-            current_state_dict['cities'] = {}
-
             for city in state.city_name:
-                current_state_dict['cities'][city['ID']] = {}
-                current_city_dict = current_state_dict['cities'][city['ID']]
-                current_city_dict['volume'] = city['volume']
-                current_city_dict['airports'] = {}
-
                 if isinstance(city.airport_name, list):
                     airports = city.airport_name
                 else:  # Single Airport
                     airports = [city.airport_name]
 
                 for airport in airports:
-                    current_city_dict['airports'][airport['ID']] = {}
-                    current_airport_dict = current_city_dict['airports'][airport['ID']]
-                    current_airport_dict['military'] = airport['military']
-                    current_airport_dict['apt_ident'] = airport['apt_ident']
-                    current_airport_dict['icao_ident'] = airport['icao_ident']
-                    current_airport_dict['records'] = []
+                    self.apt_dict[airport['apt_ident']] = {
+                        'location': {
+                            'state_code': state['ID'],
+                            'state_name': state['state_fullname'],
+                            'city': city['ID'],
+                        },
+                        'volume': city['volume'],
+                        'military': airport['military'],
+                        'faa_ident': airport['apt_ident'],
+                        'icao_ident': airport['icao_ident'],
+                        'records': [],
+                    }
+                    current_airport = self.apt_dict[airport['apt_ident']]
 
                     if isinstance(airport.record, list):
                         records = airport.record
@@ -118,4 +115,4 @@ class ParsedTPP:
                         for field in record_fields:
                             record_dict[field] = getattr(record, field).cdata
 
-                        current_airport_dict['records'].append(record_dict)
+                        current_airport['records'].append(record_dict)

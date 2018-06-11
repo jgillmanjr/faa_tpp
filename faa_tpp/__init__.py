@@ -32,6 +32,41 @@ def get_crnt_aeronav():
     return base_aeronav + eyear + enmbr + '/'
 
 
+class Airport:
+    """
+    I wonder what this might represent...
+    """
+    def __init__(
+            self,
+            location_data,
+            volume,
+            military,
+            faa_ident,
+            icao_ident,
+    ):
+        self.location_data = location_data
+        self.volume = volume
+        self.military = military
+        self.faa_ident = faa_ident
+        self.icao_ident = icao_ident
+
+        self.records = []
+
+    def get_record(self, cindex=None):
+        """
+        Return a particular record
+        :param cindex: The specific index if known
+        :return:
+        """
+        if cindex is None:
+            print('Available Charts: ')
+            for i, v in enumerate(self.records):
+                print('\t[' + str(i) + '] (' + v.chart_code + ') ' + v.chart_name)
+            cindex = int(input('Choice: '))
+
+        return self.records[cindex]
+
+
 class AirportRecord:
     """
     Represents an airport record
@@ -44,9 +79,9 @@ class AirportRecord:
             'useraction',
             'pdf_name',
             'cn_flg',
-            # 'cnsection', Some special stuff is needed for this. Do later.
+            'cnsection',  # Some special stuff is needed for this. Do later.
             'cnpage',
-            # 'bvsection', # Same as above. Special handling required.
+            'bvsection', # Same as above. Special handling required.
             'bvpage',
             'procuid',
             'two_colored',
@@ -111,8 +146,8 @@ class ParsedTPP:
                     airports = [city.airport_name]
 
                 for airport in airports:
-                    self.apt_dict[airport['apt_ident']] = {
-                        'location': {
+                    apt_data = {
+                        'location_data': {
                             'state_code': state['ID'],
                             'state_name': state['state_fullname'],
                             'city': city['ID'],
@@ -121,8 +156,8 @@ class ParsedTPP:
                         'military': airport['military'],
                         'faa_ident': airport['apt_ident'],
                         'icao_ident': airport['icao_ident'],
-                        'records': [],
                     }
+                    self.apt_dict[airport['apt_ident']] = Airport(**apt_data)
                     current_airport = self.apt_dict[airport['apt_ident']]
 
                     if isinstance(airport.record, list):
@@ -131,4 +166,4 @@ class ParsedTPP:
                         records = [airport.record]
 
                     for record in records:
-                        current_airport['records'].append(AirportRecord(anav_base=self.anav_base, record_data=record))
+                        current_airport.records.append(AirportRecord(anav_base=self.anav_base, record_data=record))

@@ -201,7 +201,7 @@ class ParsedTPP:
         :return:
         """
         sd = {}
-        for id, data in self.apt_dict.items():
+        for faa_id, data in self.apt_dict.items():
             state_code = data.location_data['state_code']
             state_name = data.location_data['state_name']
             if state_code not in sd:

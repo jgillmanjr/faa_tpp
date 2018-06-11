@@ -113,11 +113,9 @@ class ParsedTPP:
         Initialize
         :return:
         """
-        self.apt_dict = {}  # Placeholder
         self.anav_base = get_crnt_aeronav()
-        meta_url = self.anav_base + 'xml_data/d-TPP_Metafile.xml'
-        self.parsed_tpp = untangle.parse(meta_url)
-        self.to_dict()
+        self.parsed_tpp = self._parse_current_meta()
+        self.apt_dict = self._to_dict()
 
     def return_parsed(self):
         """
@@ -133,11 +131,12 @@ class ParsedTPP:
         """
         return self.apt_dict
 
-    def to_dict(self):
+    def _to_dict(self):
         """
-        Make an actual dict, or something
+        Convert the parsed XML into a dictionary we can use
         :return:
         """
+        apt_dict = {}
         for state in self.parsed_tpp.digital_tpp.state_code:
             for city in state.city_name:
                 if isinstance(city.airport_name, list):
@@ -157,8 +156,8 @@ class ParsedTPP:
                         'faa_ident': airport['apt_ident'],
                         'icao_ident': airport['icao_ident'],
                     }
-                    self.apt_dict[airport['apt_ident']] = Airport(**apt_data)
-                    current_airport = self.apt_dict[airport['apt_ident']]
+                    apt_dict[airport['apt_ident']] = Airport(**apt_data)
+                    current_airport = apt_dict[airport['apt_ident']]
 
                     if isinstance(airport.record, list):
                         records = airport.record
@@ -167,3 +166,13 @@ class ParsedTPP:
 
                     for record in records:
                         current_airport.records.append(AirportRecord(anav_base=self.anav_base, record_data=record))
+
+        return apt_dict
+
+    def _parse_current_meta(self):
+        """
+        Fetch and parse the current metafile
+        :return:
+        """
+        meta_url = self.anav_base + 'xml_data/d-TPP_Metafile.xml'
+        return untangle.parse(meta_url)

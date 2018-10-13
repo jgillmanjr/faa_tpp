@@ -37,6 +37,15 @@ class Airport:
     """
     I wonder what this might represent...
     """
+    def __str__(self):
+        return 'Name: {name} ({city}) \n\tFAA Ident: {faa_id} \n\tICAO: {icao}'.format(name=self.name,
+                                                                                       city=self.location_data['city'],
+                                                                                       faa_id=self.faa_ident,
+                                                                                       icao=self.icao_ident)
+
+    def __repr__(self):
+        return self.__str__()
+
     def __init__(
             self,
             location_data,

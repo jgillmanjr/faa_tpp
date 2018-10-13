@@ -126,6 +126,9 @@ class AirportRecord:
         r = requests.get(self.pdf_url)
         return r.content
 
+    def get_pdf_uri(self):
+        return self.pdf_url
+
 
 class ParsedTPP:
     def __init__(self):

@@ -4,6 +4,7 @@ https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dtpp/
 """
 import untangle
 import requests
+import pendulum
 
 
 __all__ = ['ParsedTPP']
@@ -120,6 +121,25 @@ class ParsedTPP:
         self.apt_dict = self._to_dict()
         self.state_dict = self._state_dict()  # Airports by state
         self.front_matter_uri = self.anav_base + 'FRNTMATTER.PDF'
+
+        # Get cycle data
+        input_format = 'HHmm z MM/DD/YY'
+        start_raw = self.parsed_tpp.digital_tpp['from_edate']
+        end_raw = self.parsed_tpp.digital_tpp['to_edate']
+        self.cycle = self.parsed_tpp.digital_tpp['cycle']
+        self.cycle_start = pendulum.from_format(start_raw[:4] + ' GMT ' + start_raw[7:], input_format).to_iso8601_string()
+        self.cycle_end = pendulum.from_format(end_raw[:4] + ' GMT ' + end_raw[7:], input_format).to_iso8601_string()
+
+    def return_cycle_info(self):
+        """
+        Returns a dictionary of cycle information. Start and end times in ISO 8601
+        :return:
+        """
+        return {
+            'cycle': self.cycle,
+            'cycle_start': self.cycle_start,
+            'cycle_end': self.cycle_end,
+        }
 
     def return_parsed(self):
         """

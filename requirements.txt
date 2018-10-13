@@ -1,2 +1,3 @@
 untangle
 requests
+pendulum == 2.0.3

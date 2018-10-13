@@ -83,7 +83,7 @@ class AirportRecord:
             'cn_flg',
             'cnsection',  # Some special stuff is needed for this. Do later.
             'cnpage',
-            'bvsection', # Same as above. Special handling required.
+            'bvsection',  # Same as above. Special handling required.
             'bvpage',
             'procuid',
             'two_colored',
@@ -119,6 +119,7 @@ class ParsedTPP:
         self.parsed_tpp = self._parse_current_meta()
         self.apt_dict = self._to_dict()
         self.state_dict = self._state_dict()  # Airports by state
+        self.front_matter_uri = self.anav_base + 'FRNTMATTER.PDF'
 
     def return_parsed(self):
         """
@@ -133,6 +134,18 @@ class ParsedTPP:
         :return:
         """
         return self.apt_dict
+
+    def return_front_matter(self, return_pdf=False):
+        """
+        Return
+        :param return_pdf: Whether the actual PDF or URI should be returned
+        :return:
+        """
+        if return_pdf:
+            r = requests.get(self.front_matter_uri)
+            return r.content
+        else:
+            return self.front_matter_uri
 
     def return_state_airports(self, state_code=None):
         """

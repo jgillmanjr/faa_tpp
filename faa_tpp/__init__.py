@@ -78,6 +78,14 @@ class Airport:
 
         return self.records[cindex]
 
+    def list_available_records(self):
+        """
+        Returns a textual description of what's available and the index
+        :return:
+        """
+        for i, v in enumerate(self.records):
+            print('[{idx}] ({chart_code}) {chart_name}'.format(idx=i, chart_code=v.chart_code, chart_name=v.chart_name))
+
 
 class AirportRecord:
     """

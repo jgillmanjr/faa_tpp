@@ -106,7 +106,6 @@ class AirportRecord:
             'procuid',
             'two_colored',
             'civil',
-            'faanfd15',
             'faanfd18',
             'copter'
         ]
